@@ -267,6 +267,9 @@ function ProTrade({ theme, nav }) {
         </div>
       </div>
 
+      {/* Order book — condensed */}
+      <OrderBook theme={theme} base={142.50}/>
+
       {/* Leader strip — quiet line */}
       <div style={{ padding: '0 24px 18px' }}>
         <div style={{ fontFamily: FONT_MONO, fontSize: 10, color: theme.textMut, letterSpacing: 1.5, display: 'flex', gap: 12 }}>
@@ -325,6 +328,12 @@ function ProTrade({ theme, nav }) {
             style={{ width: '100%', accentColor: theme.accent }}/>
         </div>
 
+        {/* Score impact (Pro only, > 10×) */}
+        <ScoreImpact theme={theme} leverage={leverage}/>
+
+        {/* TP / SL grid */}
+        <TPSLFields theme={theme} basePrice={142.50}/>
+
         {/* Margin / liq line */}
         <div style={{
           marginTop: 18, display: 'flex', justifyContent: 'space-between',
@@ -362,7 +371,7 @@ function ProLeaderboard({ theme, nav }) {
   return (
     <RScreen theme={theme} navActive="leaderboard" onNavChange={nav.setTab}>
       <RTopBar theme={theme} onModeClick={nav.toModeSwitch}
-        right={<span style={{ fontFamily: FONT_MONO, fontSize: 16, color: theme.textSec, cursor: 'pointer' }}>⌕</span>}/>
+        right={<span onClick={() => nav.goto('discover')} style={{ fontFamily: FONT_MONO, fontSize: 16, color: theme.textSec, cursor: 'pointer' }}>⌕</span>}/>
 
       <div style={{ padding: '0 24px 8px' }}>
         <Kicker theme={theme}>RANKINGS · LIVE</Kicker>
@@ -382,34 +391,74 @@ function ProLeaderboard({ theme, nav }) {
         ]}/>
       </div>
 
-      <div style={{ padding: '18px 24px 0' }}>
-        <div style={{
-          display: 'grid', gridTemplateColumns: '46px 1fr auto',
-          gap: 14, padding: '0 4px 8px',
-          fontFamily: FONT_MONO, fontSize: 9.5, color: theme.textMut,
-          letterSpacing: 2, textTransform: 'uppercase',
-        }}>
-          <span>RANK</span><span>TRADER · TIER</span><span style={{ textAlign: 'right' }}>SCORE · ROI</span>
+      {tab !== 'league' && (
+        <div style={{ padding: '18px 24px 0' }}>
+          <div style={{
+            display: 'grid', gridTemplateColumns: '46px 1fr auto',
+            gap: 14, padding: '0 4px 8px',
+            fontFamily: FONT_MONO, fontSize: 9.5, color: theme.textMut,
+            letterSpacing: 2, textTransform: 'uppercase',
+          }}>
+            <span>RANK</span><span>TRADER · TIER</span><span style={{ textAlign: 'right' }}>SCORE · ROI</span>
+          </div>
+          <RProLeaderRows theme={theme} rows={rows} onRowClick={() => nav.goto('pro-profile-other')}/>
         </div>
-        <RProLeaderRows theme={theme} rows={rows} onRowClick={() => nav.go('profile-other')}/>
-      </div>
+      )}
 
       {/* Pinned you */}
-      <div style={{ padding: '24px 24px 32px' }}>
-        <div style={{
-          fontFamily: FONT_MONO, fontSize: 9.5, color: theme.textMut,
-          letterSpacing: 3, textAlign: 'center', marginBottom: 12,
-        }}>— YOUR POSITION —</div>
-        <div style={{
-          border: `1px solid ${theme.accent}`, borderRadius: 12,
-          background: theme.accent + '10', padding: '4px 12px',
-        }}>
-          <RProLeaderRows theme={theme} firstBorder={false} rows={[
-            { r: '047', n: 'pikerkid', t: 'diamond', s: 72.4, roi: 34.2, me: true },
-          ]}/>
+      {tab !== 'league' && (
+        <div style={{ padding: '24px 24px 32px' }}>
+          <div style={{
+            fontFamily: FONT_MONO, fontSize: 9.5, color: theme.textMut,
+            letterSpacing: 3, textAlign: 'center', marginBottom: 12,
+          }}>— YOUR POSITION —</div>
+          <div style={{
+            border: `1px solid ${theme.accent}`, borderRadius: 12,
+            background: theme.accent + '10', padding: '4px 12px',
+          }}>
+            <RProLeaderRows theme={theme} firstBorder={false} rows={[
+              { r: '047', n: 'pikerkid', t: 'diamond', s: 72.4, roi: 34.2, me: true },
+            ]}/>
+          </div>
         </div>
-      </div>
+      )}
+
+      {tab === 'league' && <ProLeagueEmpty theme={theme}/>}
     </RScreen>
+  );
+}
+
+function ProLeagueEmpty({ theme }) {
+  const [code, setCode] = React.useState('');
+  return (
+    <div style={{ padding: '28px 24px 40px' }}>
+      <Kicker theme={theme}>CREATE A LEAGUE</Kicker>
+      <Body theme={theme} style={{ marginTop: 14, fontSize: 13 }}>
+        No league yet. Start one and invite your crew via a share link.
+      </Body>
+      <div style={{ marginTop: 20 }}>
+        <OutlineCTA theme={theme} arrow>Create a league</OutlineCTA>
+      </div>
+      <div style={{ marginTop: 28, textAlign: 'center', fontFamily: FONT_MONO,
+        fontSize: 9.5, color: theme.textMut, letterSpacing: 2 }}>
+        — OR JOIN WITH A CODE —
+      </div>
+      <div style={{ marginTop: 20, display: 'flex', alignItems: 'baseline', gap: 8,
+        paddingBottom: 10, borderBottom: `1px solid ${theme.border}` }}>
+        <span style={{ fontFamily: FONT_DISPLAY, fontSize: 24, fontWeight: 400,
+          color: theme.textMut, letterSpacing: -0.5 }}>@</span>
+        <input value={code} onChange={e => setCode(e.target.value)}
+          placeholder="enter league code"
+          style={{
+            flex: 1, background: 'transparent', border: 'none', outline: 'none',
+            fontFamily: FONT_DISPLAY, fontSize: 22, fontWeight: 400,
+            color: theme.text, letterSpacing: -0.4, padding: 0, caretColor: theme.accent,
+          }}/>
+      </div>
+      <div style={{ marginTop: 20 }}>
+        <AccentCTA theme={theme}>Join</AccentCTA>
+      </div>
+    </div>
   );
 }
 
@@ -418,7 +467,7 @@ function ProProfile({ theme, nav }) {
   return (
     <RScreen theme={theme} navActive="profile" onNavChange={nav.setTab}>
       <RTopBar theme={theme} onModeClick={nav.toModeSwitch}
-        right={<span style={{ fontFamily: FONT_MONO, fontSize: 16, color: theme.textSec, cursor: 'pointer' }}>⚙</span>}/>
+        right={<span onClick={() => nav.goto('settings')} style={{ fontFamily: FONT_MONO, fontSize: 16, color: theme.textSec, cursor: 'pointer' }}>⚙</span>}/>
 
       {/* Identity zone */}
       <div style={{ padding: '8px 24px 32px' }}>
@@ -711,19 +760,20 @@ function FundMeBacker({ theme, nav }) {
 function Notifications({ theme, nav }) {
   const groups = [
     { label: 'TODAY', items: [
-      { g: '◉', t: 'Streak extended to Day 8',     s: 'Keep it going.',                 unread: true },
-      { g: '↑',  t: 'Leaderboard move',             s: 'You moved from #847 → #312.',    unread: true },
-      { g: '◎', t: 'Badge unlocked',                s: 'Sniper earned.',                 unread: true },
-      { g: '◇', t: 'Reset warning',                 s: '$100 resets in 30 minutes.',     unread: false },
+      { g: '◉', t: 'Streak extended to Day 8',     s: 'Keep it going.',                 unread: true,  to: 'rookie-dashboard' },
+      { g: '↑',  t: 'Leaderboard move',             s: 'You moved from #847 → #312.',    unread: true,  to: 'rookie-leaderboard' },
+      { g: '◎', t: 'Badge unlocked',                s: 'Sniper earned.',                 unread: true,  to: 'rookie-profile' },
+      { g: '◇', t: 'Reset warning',                 s: '$100 resets in 30 minutes.',     unread: false, to: 'rookie-trade' },
     ]},
     { label: 'THIS WEEK', items: [
-      { g: '◆', t: 'Fund Me · new backer',          s: '@whale.eth deposited $500.',     unread: false },
-      { g: '↑',  t: 'Pro rank change',               s: 'You moved from #312 → #247.',    unread: false },
-      { g: '!',  t: 'Position alert',                s: 'SOL approaching stop loss.',     unread: false },
+      { g: '◆', t: 'Fund Me · new backer',          s: '@whale.eth deposited $500.',     unread: false, to: 'fundme-trader' },
+      { g: '↑',  t: 'Pro rank change',               s: 'You moved from #312 → #247.',    unread: false, to: 'pro-leaderboard' },
+      { g: '!',  t: 'Position alert',                s: 'SOL approaching stop loss.',     unread: false, to: 'pro-trade' },
+      { g: '●', t: 'Watch top traders',             s: 'See live moves from your follows.', unread: false, to: 'social-feed' },
     ]},
     { label: 'EARLIER', items: [
-      { g: '◈', t: 'First Blood badge',             s: 'You earned First Blood.',        unread: false },
-      { g: '◆', t: 'Voltage badge',                 s: 'Streak reached 10 days.',        unread: false },
+      { g: '◈', t: 'First Blood badge',             s: 'You earned First Blood.',        unread: false, to: 'pro-profile' },
+      { g: '◆', t: 'Voltage badge',                 s: 'Streak reached 10 days.',        unread: false, to: 'rookie-profile' },
     ]},
   ];
   return (
@@ -747,7 +797,7 @@ function Notifications({ theme, nav }) {
           <div style={{ marginTop: 12 }}>
             <HairlineList theme={theme}>
               {g.items.map((it, i) => (
-                <HairlineRow key={i} theme={theme}>
+                <HairlineRow key={i} theme={theme} onClick={() => it.to && nav.goto(it.to)}>
                   <span style={{
                     width: 28, fontFamily: FONT_DISPLAY, fontSize: 16,
                     color: it.unread ? theme.accent : theme.textMut, lineHeight: 1,

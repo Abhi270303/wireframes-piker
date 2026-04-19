@@ -68,13 +68,23 @@ const SCREENS = {
   'fundme-backer':      { label: 'Fund Me · Backer', mode: 'pro', comp: 'FundMeBacker' },
   'notifications':      { label: 'Notifications', mode: 'rookie', comp: 'Notifications' },
   'milestone':          { label: 'Tier Upgrade',  mode: 'pro', comp: 'Milestone' },
+  // new
+  'settings':                { label: 'Settings',           mode: 'rookie', comp: 'Settings' },
+  'discover':                { label: 'Discover',           mode: 'rookie', comp: 'Discover' },
+  'rookie-profile-other':    { label: 'Profile · Other',    mode: 'rookie', comp: 'RookieProfileOther' },
+  'pro-profile-other':       { label: 'Profile · Other',    mode: 'pro',    comp: 'ProProfileOther' },
+  'fundme-backer-dashboard': { label: 'Backer Dashboard',   mode: 'pro',    comp: 'FundMeBackerDashboard' },
+  'social-feed':             { label: 'Live Feed',          mode: 'rookie', comp: 'SocialFeed' },
 };
 
 const GALLERY_GROUPS = [
   { label: 'Onboarding', keys: ['onboard-a','onboard-b','onboard-c','signup','username','mode-intro'] },
   { label: 'Rookie Mode · Silver/Purple',   keys: ['rookie-dashboard','rookie-trade','rookie-summary','rookie-leaderboard','rookie-profile'] },
   { label: 'Pro Mode · Gold/Purple',        keys: ['pro-intro','pro-dashboard','pro-trade','pro-leaderboard','pro-profile'] },
-  { label: 'Fund Me · Solana',              keys: ['fundme-trader','fundme-backer'] },
+  { label: 'Fund Me · Solana',              keys: ['fundme-trader','fundme-backer','fundme-backer-dashboard'] },
+  { label: 'Other Profiles',                keys: ['rookie-profile-other','pro-profile-other'] },
+  { label: 'Social',                        keys: ['social-feed','discover'] },
+  { label: 'Settings',                      keys: ['settings'] },
   { label: 'Shared',                        keys: ['notifications','milestone'] },
 ];
 

@@ -277,6 +277,9 @@ function RookieTrade({ theme, nav }) {
         </div>
       </div>
 
+      {/* Order book — condensed */}
+      <OrderBook theme={theme} base={142.50}/>
+
       {/* Capital strip — same hairline treatment as dashboard */}
       <div style={{ padding: '0 24px 18px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8,
@@ -354,6 +357,9 @@ function RookieTrade({ theme, nav }) {
             onChange={e => setLeverage(+e.target.value)}
             style={{ width: '100%', accentColor: theme.accent }}/>
         </div>
+
+        {/* TP / SL grid */}
+        <TPSLFields theme={theme} basePrice={142.50}/>
 
         {/* Quiet helper line */}
         <div style={{
@@ -539,7 +545,7 @@ function RookieLeaderboard({ theme, nav }) {
   return (
     <RScreen theme={theme} navActive="leaderboard" onNavChange={nav.setTab}>
       <RTopBar theme={theme} onModeClick={nav.toModeSwitch}
-        right={<span style={{ fontFamily: FONT_MONO, fontSize: 16, color: theme.textSec, cursor: 'pointer' }}>⌕</span>}/>
+        right={<span onClick={() => nav.goto('discover')} style={{ fontFamily: FONT_MONO, fontSize: 16, color: theme.textSec, cursor: 'pointer' }}>⌕</span>}/>
 
       <div style={{ padding: '0 24px 8px' }}>
         <Kicker theme={theme}>LEADERBOARD · LIVE</Kicker>
@@ -571,11 +577,12 @@ function RookieLeaderboard({ theme, nav }) {
               <span>RANK</span><span>TRADER · STREAK</span><span style={{ textAlign: 'right' }}>P&amp;L</span>
             </div>
             {rows.map((r, i) => (
-              <div key={r.r} style={{
+              <div key={r.r} onClick={() => nav.goto('rookie-profile-other')} style={{
                 display: 'grid', gridTemplateColumns: '46px 1fr auto',
                 alignItems: 'center', gap: 14, padding: '14px 4px',
                 borderTop: i === 0 ? `1px solid ${theme.border}` : 'none',
                 borderBottom: `1px solid ${theme.border}`,
+                cursor: 'pointer',
               }}>
                 <span style={{
                   fontFamily: FONT_MONO, fontSize: 11,
@@ -623,11 +630,12 @@ function RookieLeaderboard({ theme, nav }) {
       {tab === 'all-time' && (
         <div style={{ padding: '18px 24px 32px' }}>
           {rows.map((r, i) => (
-            <div key={r.r} style={{
+            <div key={r.r} onClick={() => nav.goto('rookie-profile-other')} style={{
               display: 'grid', gridTemplateColumns: '46px 1fr auto',
               alignItems: 'center', gap: 14, padding: '14px 4px',
               borderTop: i === 0 ? `1px solid ${theme.border}` : 'none',
               borderBottom: `1px solid ${theme.border}`,
+              cursor: 'pointer',
             }}>
               <span style={{ fontFamily: FONT_MONO, fontSize: 11, color: theme.textMut, fontWeight: 500 }}>#{r.r}</span>
               <span style={{ fontFamily: FONT_DISPLAY, fontSize: 14, color: theme.textSec, letterSpacing: -0.2 }}>{r.n}</span>
@@ -667,7 +675,7 @@ function RookieProfile({ theme, nav }) {
   return (
     <RScreen theme={theme} navActive="profile" onNavChange={nav.setTab}>
       <RTopBar theme={theme} onModeClick={nav.toModeSwitch}
-        right={<span style={{ fontFamily: FONT_MONO, fontSize: 16, color: theme.textSec, cursor: 'pointer' }}>⚙</span>}/>
+        right={<span onClick={() => nav.goto('settings')} style={{ fontFamily: FONT_MONO, fontSize: 16, color: theme.textSec, cursor: 'pointer' }}>⚙</span>}/>
 
       {/* Identity zone — like the username + monogram from S1d/S1e */}
       <div style={{ padding: '8px 24px 32px' }}>
