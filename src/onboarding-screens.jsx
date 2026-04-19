@@ -417,7 +417,6 @@ function OnboardUsername({ theme, onNext }) {
           }}>@</span>
           <input value={name}
             onChange={e => setName(e.target.value.toLowerCase().slice(0, 20))}
-            autoFocus
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
               fontFamily: FONT_DISPLAY, fontSize: 38, fontWeight: 400,
@@ -561,4 +560,5 @@ function ModeChoiceCard({ themeLocal, title, subtitle, lines, kicker, onClick, e
 
 Object.assign(window, {
   OnboardS1a, OnboardS1b, OnboardS1c, OnboardSignup, OnboardUsername, ModeIntro,
+  OnboardBG, ProgressRail, ModeChoiceCard,
 });

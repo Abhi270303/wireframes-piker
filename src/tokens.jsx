@@ -15,7 +15,7 @@ const ROOKIE = {
   borderStrong:'#3A3A50',
   text:        '#F0F0F5',
   textSec:     '#9090B8',
-  textMut:     '#6060858',
+  textMut:     '#606085',
   textDim:     '#505070',
   accent:      '#B8B8E0',
   accentDeep:  '#8080B8',

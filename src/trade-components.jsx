@@ -251,7 +251,7 @@ function LbRow({ theme, row, pro = false, isLast = false, onClick }) {
           {pro ? <>
             <span style={{ color: TIER_COLORS[r.tier]?.a }}>{r.tier}</span>
             {r.fundMe && <span style={{ color: '#4ADE80', marginLeft: 6 }}>● fund me</span>}
-          </> : <>🔥 {r.streak || 0}d</>}
+          </> : <>◈ {r.streak || 0}d</>}
         </div>
       </div>
       <div style={{ textAlign: 'right' }}>

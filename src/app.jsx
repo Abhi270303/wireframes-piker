@@ -265,7 +265,8 @@ function App() {
     catch { return DEFAULT_TWEAKS; }
   });
   const [screen, setScreen] = React.useState(() => {
-    return localStorage.getItem('piker-screen') || tweaks.startScreen || 'rookie-dashboard';
+    const q = new URLSearchParams(location.search).get('s') || (location.hash || '').replace('#', '');
+    return q || localStorage.getItem('piker-screen') || tweaks.startScreen || 'rookie-dashboard';
   });
   const [tweaksVisible, setTweaksVisible] = React.useState(false);
 
@@ -305,6 +306,7 @@ function App() {
       background: 'radial-gradient(ellipse 900px 700px at 50% 30%, #151520, #07070A 70%)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 40, position: 'relative',
+      overflow: 'hidden',
     }}>
       <PhoneViewer screenKey={screen} themes={themes} setScreen={setScreen}/>
       {/* Navigator chips */}
