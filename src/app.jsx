@@ -77,6 +77,25 @@ const SCREENS = {
   'social-feed':             { label: 'Live Feed',          mode: 'rookie', comp: 'SocialFeed' },
 };
 
+// Desktop component map — same keys, D-prefixed components
+const DSCREENS = {
+  'onboard-a': 'DOnboardA', 'onboard-b': 'DOnboardB', 'onboard-c': 'DOnboardC',
+  'signup': 'DSignup', 'username': 'DUsername', 'mode-intro': 'DModeIntro',
+  'rookie-dashboard': 'DRookieDashboard', 'rookie-trade': 'DRookieTrade',
+  'rookie-summary': 'DRookieSummary', 'rookie-leaderboard': 'DRookieLeaderboard',
+  'rookie-profile': 'DRookieProfile',
+  'pro-intro': 'DProIntro', 'pro-dashboard': 'DProDashboard',
+  'pro-trade': 'DProTrade', 'pro-leaderboard': 'DProLeaderboard',
+  'pro-profile': 'DProProfile',
+  'fundme-trader': 'DFundMeTrader', 'fundme-backer': 'DFundMeBacker',
+  'fundme-backer-dashboard': 'DBackerDashboard',
+  'notifications': 'DNotifications', 'milestone': 'DMilestone',
+  'settings': 'DSettings', 'discover': 'DDiscover',
+  'rookie-profile-other': 'DRookieProfileOther',
+  'pro-profile-other': 'DProProfileOther',
+  'social-feed': 'DSocialFeed',
+};
+
 const GALLERY_GROUPS = [
   { label: 'Onboarding', keys: ['onboard-a','onboard-b','onboard-c','signup','username','mode-intro'] },
   { label: 'Rookie Mode · Silver/Purple',   keys: ['rookie-dashboard','rookie-trade','rookie-summary','rookie-leaderboard','rookie-profile'] },
@@ -102,6 +121,23 @@ function ScreenHost({ screenKey, themes, nav }) {
   if (s.comp === 'OnboardSignup')  return <Comp theme={theme} onNext={() => nav.goto('username')}/>;
   if (s.comp === 'OnboardUsername')return <Comp theme={theme} onNext={() => nav.goto('mode-intro')}/>;
   if (s.comp === 'ModeIntro') return <Comp theme={theme}
+    onRookie={() => nav.goto('rookie-dashboard')} onPro={() => nav.goto('pro-intro')}/>;
+  return <Comp theme={theme} nav={nav}/>;
+}
+
+// Desktop screen host
+function DScreenHost({ screenKey, themes, nav }) {
+  const s = SCREENS[screenKey];
+  if (!s) return null;
+  const compName = DSCREENS[screenKey];
+  const Comp = compName && window[compName];
+  if (!Comp) return <div style={{ color:'red', padding: 40 }}>Missing desktop screen: {compName || screenKey}</div>;
+  const theme = themes[s.mode];
+  // Pass nav + onNext-style props for onboarding flow
+  if (compName === 'DOnboardA') return <Comp theme={theme} onNext={() => nav.goto('onboard-b')}/>;
+  if (compName === 'DOnboardB') return <Comp theme={theme} onNext={() => nav.goto('onboard-c')}/>;
+  if (compName === 'DOnboardC') return <Comp theme={theme} onNext={() => nav.goto('signup')}/>;
+  if (compName === 'DModeIntro') return <Comp theme={theme} nav={nav}
     onRookie={() => nav.goto('rookie-dashboard')} onPro={() => nav.goto('pro-intro')}/>;
   return <Comp theme={theme} nav={nav}/>;
 }
@@ -279,6 +315,17 @@ function App() {
     return q || localStorage.getItem('piker-screen') || tweaks.startScreen || 'rookie-dashboard';
   });
   const [tweaksVisible, setTweaksVisible] = React.useState(false);
+  const [viewport, setViewport] = React.useState(() => {
+    const q = new URLSearchParams(location.search).get('v');
+    return q || localStorage.getItem('piker-viewport') || 'mobile';
+  });
+  React.useEffect(() => { localStorage.setItem('piker-viewport', viewport); }, [viewport]);
+
+  const [dNavOpen, setDNavOpen] = React.useState(() => {
+    const v = localStorage.getItem('piker-dnav-open');
+    return v === null ? false : v === '1';
+  });
+  React.useEffect(() => { localStorage.setItem('piker-dnav-open', dNavOpen ? '1' : '0'); }, [dNavOpen]);
 
   React.useEffect(() => { localStorage.setItem('piker-screen', screen); }, [screen]);
   React.useEffect(() => { localStorage.setItem('piker-tweaks', JSON.stringify(tweaks)); }, [tweaks]);
@@ -301,12 +348,125 @@ function App() {
 
   const themes = useThemes(tweaks);
 
+  // Viewport toggle UI (always rendered)
+  const ViewportToggle = () => (
+    <div style={{
+      position: 'fixed', top: 18, right: 18, zIndex: 50,
+      display: 'flex', gap: 4, padding: 4,
+      background: '#0A0A0D', border: '1px solid #2a2a2a', borderRadius: 8,
+      boxShadow: '0 6px 20px rgba(0,0,0,0.5)',
+    }}>
+      {[
+        { k: 'mobile',  g: '◫', label: 'Mobile' },
+        { k: 'desktop', g: '⬜', label: 'Desktop' },
+      ].map(o => {
+        const on = viewport === o.k;
+        return (
+          <div key={o.k} onClick={() => setViewport(o.k)} style={{
+            padding: '6px 12px', cursor: 'pointer',
+            background: on ? '#1a1a22' : 'transparent',
+            border: `1px solid ${on ? '#3a3a44' : 'transparent'}`,
+            borderRadius: 6,
+            fontFamily: FONT_DISPLAY, fontSize: 11, fontWeight: 600,
+            color: on ? '#F5F5F0' : '#888',
+          }}>{o.g}  {o.label}</div>
+        );
+      })}
+    </div>
+  );
+
   if (tweaks.showGallery) {
     return (
       <>
         <Gallery themes={themes} onPick={(k) => { setScreen(k); setTweaks({ showGallery: false }); }}/>
         <TweaksPanel tweaks={tweaks} setTweaks={setTweaks} visible={tweaksVisible}/>
       </>
+    );
+  }
+
+  // Desktop view — full-width, no PhoneFrame
+  if (viewport === 'desktop') {
+    const dnav = {
+      go: setScreen, goto: setScreen,
+      setTab: (tab) => {
+        const mode = SCREENS[screen]?.mode || 'rookie';
+        const m = {
+          home:        mode === 'pro' ? 'pro-dashboard' : 'rookie-dashboard',
+          trade:       mode === 'pro' ? 'pro-trade' : 'rookie-trade',
+          leaderboard: mode === 'pro' ? 'pro-leaderboard' : 'rookie-leaderboard',
+          profile:     mode === 'pro' ? 'pro-profile' : 'rookie-profile',
+          settings:    'settings',
+          notifications: 'notifications',
+        };
+        if (m[tab]) setScreen(m[tab]);
+      },
+      setMode: (mode, targetKey) => setScreen(targetKey),
+      toModeSwitch: () => {
+        const mode = SCREENS[screen]?.mode;
+        if (mode === 'rookie') setScreen('pro-intro');
+        else setScreen('rookie-dashboard');
+      },
+    };
+    return (
+      <div style={{ display: 'flex', minHeight: '100vh', background: '#07070A' }}>
+        {/* Collapsible left navigator (overlay drawer when open) */}
+        {dNavOpen && (
+          <>
+            <div onClick={() => setDNavOpen(false)} style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 60,
+            }}/>
+            <div style={{
+              position: 'fixed', top: 0, left: 0, bottom: 0, width: 220, zIndex: 61,
+              background: '#0A0A0D', borderRight: '1px solid #1a1a1a',
+              padding: '60px 8px 24px 16px', overflow: 'auto',
+              boxShadow: '0 0 40px rgba(0,0,0,0.6)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <div style={{ fontFamily: FONT_MONO, fontSize: 9.5, color: '#666', letterSpacing: 1.3 }}>SCREENS</div>
+                <div onClick={() => setDNavOpen(false)} style={{
+                  cursor: 'pointer', color: '#888', fontFamily: FONT_MONO, fontSize: 14, padding: '0 6px',
+                }}>×</div>
+              </div>
+              {GALLERY_GROUPS.map(g => (
+                <div key={g.label} style={{ marginBottom: 14 }}>
+                  <div style={{ fontFamily: FONT_DISPLAY, fontSize: 10, color: '#888', letterSpacing: 0.8, marginBottom: 5, fontWeight: 700, textTransform: 'uppercase' }}>{g.label}</div>
+                  {g.keys.map(k => {
+                    const active = screen === k;
+                    const s = SCREENS[k];
+                    const c = themes[s.mode].accent;
+                    return (
+                      <div key={k} onClick={() => { setScreen(k); setDNavOpen(false); }} style={{
+                        padding: '5px 8px', borderRadius: 6, cursor: 'pointer',
+                        background: active ? c + '20' : 'transparent',
+                        border: `1px solid ${active ? c : 'transparent'}`,
+                        fontFamily: FONT_DISPLAY, fontSize: 11,
+                        color: active ? c : '#999',
+                        marginBottom: 2, fontWeight: active ? 700 : 500,
+                      }}>{s.label}</div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+        {/* Floating opener */}
+        {!dNavOpen && (
+          <div onClick={() => setDNavOpen(true)} style={{
+            position: 'fixed', top: 18, left: 18, zIndex: 50,
+            padding: '8px 12px', cursor: 'pointer',
+            background: '#0A0A0D', border: '1px solid #2a2a2a', borderRadius: 8,
+            fontFamily: FONT_DISPLAY, fontSize: 11, fontWeight: 600, color: '#ccc',
+            letterSpacing: 0.4,
+          }}>≡  Screens</div>
+        )}
+        {/* Desktop screen — full viewport width */}
+        <div style={{ flex: 1, minWidth: 0, overflow: 'auto' }}>
+          <DScreenHost screenKey={screen} themes={themes} nav={dnav}/>
+        </div>
+        <ViewportToggle/>
+        <TweaksPanel tweaks={tweaks} setTweaks={setTweaks} visible={tweaksVisible}/>
+      </div>
     );
   }
 
@@ -319,6 +479,7 @@ function App() {
       overflow: 'hidden',
     }}>
       <PhoneViewer screenKey={screen} themes={themes} setScreen={setScreen}/>
+      <ViewportToggle/>
       {/* Navigator chips */}
       <div style={{
         position: 'fixed', left: 24, top: 24, bottom: 24, width: 180,
